@@ -97,17 +97,21 @@ export default function WorkingHoursPage() {
     field: "startTime" | "endTime" | "isOpen",
     value: string | boolean
   ) => {
-    setHours((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [field]: value,
-        startTime: prev[day]?.startTime || "09:00",
-        endTime: prev[day]?.endTime || "18:00",
-        isOpen:
-          field === "isOpen" ? (value as boolean) : prev[day]?.isOpen ?? true,
-      },
-    }));
+    setHours((prev) => {
+      const currentDay = prev[day] || {
+        startTime: "09:00",
+        endTime: "18:00",
+        isOpen: true,
+      };
+
+      return {
+        ...prev,
+        [day]: {
+          ...currentDay,
+          [field]: value,
+        },
+      };
+    });
   };
 
   if (isLoading) {
