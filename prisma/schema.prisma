@@ -1,0 +1,410 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite doesn't support enums, using String with @default
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  image         String?
+  role          String    @default("CLIENT") // CLIENT or ADMIN
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  language      String    @default("en") // For multi-language support
+  
+  accounts      Account[]
+  sessions      Session[]
+  appointments  Appointment[]
+  reviews       Review[]
+  messages      Message[]
+  favoriteStyles FavoriteStyle[]
+  communicationLogs CommunicationLog[]
+  waitlistEntries Waitlist[]
+  referrals      Referral[] @relation("Referrals")
+  preferences    ClientPreference[]
+  pushSubscriptions PushSubscription[]
+  loyaltyPoints Int       @default(0)
+  referralCode  String?   @unique
+  notes         String?   // Client notes/preferences
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  duration    Int      // Duration in minutes
+  price       Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  appointments Appointment[]
+  packageServices ServicePackageService[]
+  waitlistEntries Waitlist[]
+  
+  @@map("services")
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  userId        String
+  serviceId     String
+  date          DateTime
+  status        String            @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED, RESCHEDULED
+  notes         String?           // Client notes for this appointment
+  barberNotes   String?           // Barber's notes
+  originalDate  DateTime?         // For rescheduling - tracks original date
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reminderSent  Boolean           @default(false)
+  reminderSentAt DateTime?
+  isRecurring   Boolean           @default(false)
+  recurringId   String?           // Link to RecurringAppointment
+  templateId    String?           // Link to AppointmentTemplate
+  
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service        Service           @relation(fields: [serviceId], references: [id])
+  payment        Payment?
+  review         Review?
+  messages       Message[]
+  photos         AppointmentPhoto[]
+  aftercareNote  AftercareNote?
+  
+  @@map("appointments")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique
+  amount        Float
+  method        String?        // CASH, CARD, MOBILE
+  status        String          @default("PENDING") // PENDING, PAID, REFUNDED
+  depositAmount Float?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("payments")
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  userId        String
+  appointmentId String   @unique
+  rating        Int      // 1-5
+  comment       String?
+  isVisible     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("reviews")
+}
+
+model WorkingHours {
+  id        String   @id @default(cuid())
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime String   // Format: "09:00"
+  endTime   String   // Format: "17:00"
+  isOpen    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([dayOfWeek])
+  @@map("working_hours")
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  
+  @@map("blocked_dates")
+}
+
+model PromoCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  discount    Float     // Percentage or fixed amount
+  isPercentage Boolean  @default(true)
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@map("promo_codes")
+}
+
+model PortfolioImage {
+  id        String   @id @default(cuid())
+  url       String
+  title     String?
+  caption   String?
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("portfolio_images")
+}
+
+model Settings {
+  id                    String   @id @default(cuid())
+  key                   String   @unique
+  value                 String
+  description           String?
+  updatedAt             DateTime @updatedAt
+  
+  @@map("settings")
+}
+
+model RecurringAppointment {
+  id            String   @id @default(cuid())
+  userId        String
+  serviceId     String
+  startDate     DateTime
+  endDate       DateTime?
+  frequency     String   // WEEKLY, BIWEEKLY, MONTHLY
+  dayOfWeek     Int?     // 0-6 for weekly
+  dayOfMonth    Int?     // 1-31 for monthly
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("recurring_appointments")
+}
+
+model Waitlist {
+  id            String   @id @default(cuid())
+  userId        String
+  serviceId     String
+  preferredDate DateTime?
+  preferredTime String?
+  notes         String?
+  status        String   @default("PENDING") // PENDING, NOTIFIED, BOOKED, CANCELLED
+  notifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service       Service  @relation(fields: [serviceId], references: [id])
+  
+  @@map("waitlist")
+}
+
+model ServicePackage {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  price       Float
+  discount    Float    // Discount percentage
+  services    ServicePackageService[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("service_packages")
+}
+
+model ServicePackageService {
+  id              String   @id @default(cuid())
+  packageId       String
+  serviceId       String
+  quantity        Int      @default(1)
+  createdAt       DateTime @default(now())
+  
+  package         ServicePackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service         Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  @@unique([packageId, serviceId])
+  @@map("service_package_services")
+}
+
+model CommunicationLog {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String   // EMAIL, SMS, CALL, NOTE, MESSAGE
+  subject       String?
+  content       String
+  direction     String   // INBOUND, OUTBOUND
+  createdAt     DateTime @default(now())
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("communication_logs")
+}
+
+model AppointmentTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  serviceId   String?
+  duration    Int
+  notes       String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("appointment_templates")
+}
+
+model FavoriteStyle {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  imageUrl    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("favorite_styles")
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  userId        String
+  appointmentId String?
+  content       String
+  senderRole    String   // CLIENT or ADMIN
+  isRead        Boolean  @default(false)
+  readAt        DateTime?
+  createdAt     DateTime @default(now())
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+model AppointmentPhoto {
+  id            String   @id @default(cuid())
+  appointmentId String
+  url           String
+  type          String   // BEFORE, AFTER, REFERENCE
+  caption       String?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("appointment_photos")
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+  referrerId    String   // User who referred
+  referredId    String?  // User who was referred (null until they sign up)
+  referredEmail String?
+  code          String   @unique
+  status        String   @default("PENDING") // PENDING, SIGNED_UP, BOOKED, COMPLETED
+  rewardPoints  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  referrer      User     @relation("Referrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  
+  @@map("referrals")
+}
+
+model ClientPreference {
+  id            String   @id @default(cuid())
+  userId        String
+  key           String   // e.g., "haircut_style", "preferred_time", "barber_notes"
+  value         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, key])
+  @@map("client_preferences")
+}
+
+model AftercareNote {
+  id            String   @id @default(cuid())
+  appointmentId String   @unique
+  instructions  String
+  tips          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("aftercare_notes")
+}
+
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("push_subscriptions")
+}
+
