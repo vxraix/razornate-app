@@ -19,6 +19,18 @@ body {
   overflow-x: hidden;
   background-color: #000000;
   color: #ffffff;
+  width: 100%;
+  position: relative;
+}
+
+/* Prevent horizontal overflow on all containers */
+* {
+  max-width: 100%;
+}
+
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
 }
 
 body {
@@ -122,5 +134,37 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #e6c200;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Prevent text overflow */
+.break-words {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Ensure containers don't overflow */
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 

@@ -44,7 +44,7 @@ export default function HomePage() {
               Premium Barber Experience
             </motion.div>
             <motion.h1 
-              className="text-5xl md:text-7xl font-bold tracking-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight px-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -54,7 +54,7 @@ export default function HomePage() {
               </span>
             </motion.h1>
             <motion.p 
-              className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-400 max-w-2xl mx-auto px-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
@@ -99,12 +99,12 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="px-4 sm:px-6 py-20 border-t border-gray-800">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 md:py-20 border-t border-gray-800">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 md:mb-16 px-4">
             Why Choose Razornate?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               {
                 icon: Clock,
@@ -151,12 +151,12 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 sm:px-6 py-20 border-t border-gray-800">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 md:py-20 border-t border-gray-800">
+        <div className="container mx-auto max-w-4xl text-center px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6">
             Ready to Experience Premium Grooming?
           </h2>
-          <p className="text-gray-400 text-lg mb-8 md:mb-10">
+          <p className="text-gray-400 text-base sm:text-lg mb-6 sm:mb-8 md:mb-10">
             Join Razornate and book your appointment today.
           </p>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -179,9 +179,9 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-4 sm:px-6 py-12 md:py-16 border-t border-gray-800">
+      <footer className="px-4 sm:px-6 py-8 sm:py-12 md:py-16 border-t border-gray-800">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12 mb-6 sm:mb-8 md:mb-12">
             <div>
               <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <Scissors className="w-5 h-5 text-gold-500" />

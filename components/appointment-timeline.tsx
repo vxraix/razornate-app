@@ -45,7 +45,7 @@ export function AppointmentTimeline({ appointments }: AppointmentTimelineProps) 
   return (
     <div className="relative">
       {/* Timeline line */}
-      <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gold-500/20" />
+      <div className="absolute left-4 sm:left-8 top-0 bottom-0 w-0.5 bg-gold-500/20" />
 
       <div className="space-y-6">
         {sortedAppointments.map((appointment, index) => (
@@ -54,12 +54,12 @@ export function AppointmentTimeline({ appointments }: AppointmentTimelineProps) 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="relative flex gap-4"
+            className="relative flex gap-3 sm:gap-4"
           >
             {/* Timeline dot */}
             <div className="relative z-10 flex-shrink-0">
               <div
-                className={`w-4 h-4 rounded-full ${getStatusColor(
+                className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${getStatusColor(
                   appointment.status
                 )} border-2 border-black`}
               />
@@ -89,7 +89,7 @@ export function AppointmentTimeline({ appointments }: AppointmentTimelineProps) 
                         {appointment.status}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {formatDate(appointment.date)}

@@ -123,7 +123,7 @@ export function Messaging({ appointmentId, userId, onClose }: MessagingProps) {
                 className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
+                  className={`max-w-[85%] sm:max-w-[70%] rounded-lg p-3 ${
                     isOwnMessage
                       ? 'bg-gold-500 text-black'
                       : 'bg-gray-800 text-white'

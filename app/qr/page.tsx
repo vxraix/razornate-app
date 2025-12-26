@@ -57,31 +57,32 @@ export default function QRCodePage() {
       <div className="container mx-auto max-w-2xl">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl mb-2">QR Code Booking</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl mb-2">QR Code Booking</CardTitle>
             <CardDescription>
               Share this QR code for quick booking access
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
-            <div className="p-6 bg-white rounded-lg">
+            <div className="p-4 sm:p-6 bg-white rounded-lg w-full max-w-xs sm:max-w-none">
               <QRCodeSVG
                 id="qr-code"
                 value={qrValue}
-                size={256}
+                size={typeof window !== 'undefined' && window.innerWidth < 640 ? 200 : 256}
                 level="H"
                 includeMargin={true}
+                className="w-full h-auto"
               />
             </div>
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-2 w-full px-4">
               <p className="text-gray-400 text-sm">Scan to book an appointment</p>
               <p className="text-gold-500 text-xs font-mono break-all">{qrValue}</p>
             </div>
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={handleDownload}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+              <Button variant="outline" onClick={handleDownload} className="w-full sm:w-auto">
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
-              <Button variant="outline" onClick={handleShare}>
+              <Button variant="outline" onClick={handleShare} className="w-full sm:w-auto">
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
               </Button>

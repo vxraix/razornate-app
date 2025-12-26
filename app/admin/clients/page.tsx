@@ -100,9 +100,9 @@ export default function ClientsPage() {
     <div className="min-h-screen bg-black px-4 py-8 md:py-12">
       <Navbar />
       <div className="container mx-auto max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Clients</h1>
-          <p className="text-gray-400">Manage your client database</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">Clients</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Manage your client database</p>
         </div>
 
         <div className="mb-6">
@@ -117,7 +117,7 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Clients List */}
           <div className="lg:col-span-2 space-y-3">
             {filteredClients.length === 0 ? (

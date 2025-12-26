@@ -71,7 +71,7 @@ export default function SignUpPage() {
           <div className="flex justify-center mb-4">
             <Scissors className="w-12 h-12 text-gold-500" />
           </div>
-          <CardTitle className="text-3xl mb-2">Create Account</CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl mb-2">Create Account</CardTitle>
           <CardDescription>Join Razornate to book your appointments</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

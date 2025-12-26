@@ -178,7 +178,7 @@ export function RescheduleModal({
                         Loading available times...
                       </div>
                     ) : (
-                      <div className="grid grid-cols-4 gap-2 max-h-60 overflow-y-auto">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
                         {timeSlots.map((slot) => (
                           <button
                             key={slot.time}

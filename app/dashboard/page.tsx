@@ -142,10 +142,10 @@ export default function DashboardPage() {
           transition={{ duration: 0.6 }}
         >
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
               Dashboard
             </h1>
-            <p className="text-gray-400">Manage your appointments</p>
+            <p className="text-gray-400 text-sm sm:text-base">Manage your appointments</p>
           </div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link href="/book">
@@ -166,7 +166,7 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Notifications & Referrals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -204,8 +204,8 @@ export default function DashboardPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-2xl font-semibold mb-4">Upcoming Appointments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Upcoming Appointments</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {upcomingAppointments.map((appointment, index) => (
                 <motion.div
                   key={appointment.id}
@@ -299,8 +299,8 @@ export default function DashboardPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <h2 className="text-2xl font-semibold mb-4">Past Appointments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Past Appointments</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {pastAppointments.map((appointment, index) => (
                 <motion.div
                   key={appointment.id}

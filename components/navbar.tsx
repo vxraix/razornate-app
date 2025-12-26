@@ -10,12 +10,12 @@ export function Navbar() {
   const { data: session } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-800/50 bg-black/95 backdrop-blur-md">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Scissors className="w-6 h-6 text-gold-500" />
-            <span className="text-xl font-bold text-white">Razornate</span>
+    <nav className="sticky top-0 z-50 border-b border-gray-800/50 bg-black/95 backdrop-blur-md overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 max-w-full">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Scissors className="w-5 h-5 sm:w-6 sm:h-6 text-gold-500" />
+            <span className="text-lg sm:text-xl font-bold text-white">Razornate</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -71,7 +71,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-4 border-t border-gray-800 animate-slide-down">
+          <div className="md:hidden py-4 space-y-4 border-t border-gray-800 animate-slide-down overflow-y-auto max-h-[calc(100vh-4rem)]">
             <Link
               href="/book"
               className="block text-gray-300 hover:text-gold-500 transition-colors"

@@ -84,9 +84,9 @@ export default function BlockDatesPage() {
     <div className="min-h-screen bg-black px-4 py-8 md:py-12">
       <Navbar />
       <div className="container mx-auto max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Block Dates</h1>
-          <p className="text-gray-400">Block dates when you&apos;re unavailable</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">Block Dates</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Block dates when you&apos;re unavailable</p>
         </div>
 
         <Card className="mb-6">

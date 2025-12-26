@@ -106,12 +106,12 @@ export default function AnalyticsPage() {
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent">
                 Analytics Dashboard
               </h1>
-              <p className="text-gray-400">Insights into your business performance</p>
+              <p className="text-gray-400 text-sm sm:text-base">Insights into your business performance</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as any)}

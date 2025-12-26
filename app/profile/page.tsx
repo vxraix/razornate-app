@@ -82,9 +82,9 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black px-4 py-8 md:py-12">
       <Navbar />
       <div className="container mx-auto max-w-2xl">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Profile</h1>
-          <p className="text-gray-400">Manage your account information</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">Profile</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Manage your account information</p>
         </div>
 
         <Card>

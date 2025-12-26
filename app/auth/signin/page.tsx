@@ -55,7 +55,7 @@ export default function SignInPage() {
           <div className="flex justify-center mb-4">
             <Scissors className="w-12 h-12 text-gold-500" />
           </div>
-          <CardTitle className="text-3xl mb-2">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl mb-2">Welcome Back</CardTitle>
           <CardDescription>Sign in to your Razornate account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

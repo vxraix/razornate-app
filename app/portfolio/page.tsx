@@ -46,12 +46,12 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-black">
       <Navbar />
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-8 md:py-12">
-        <div className="mb-8 md:mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Portfolio</h1>
-          <p className="text-gray-400 text-lg">Our latest work and styles</p>
+        <div className="mb-6 sm:mb-8 md:mb-12 text-center px-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Portfolio</h1>
+          <p className="text-gray-400 text-base sm:text-lg">Our latest work and styles</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {images.map((image) => (
             <Card
               key={image.id}
@@ -96,14 +96,14 @@ export default function PortfolioPage() {
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedImage(null)}
           >
-            <div className="max-w-4xl w-full relative" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-4xl w-full relative px-4" onClick={(e) => e.stopPropagation()}>
               <div className="relative w-full aspect-auto">
                 <Image
                   src={selectedImage.url}
                   alt={selectedImage.title || 'Portfolio image'}
                   width={800}
                   height={600}
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-lg max-h-[80vh] object-contain"
                 />
               </div>
               {(selectedImage.title || selectedImage.caption) && (

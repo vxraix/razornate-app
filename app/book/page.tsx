@@ -180,14 +180,14 @@ export default function BookPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-gold-500 to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient px-4">
             Book Appointment
           </h1>
-          <p className="text-gray-400 text-lg">Select your service and preferred time</p>
+          <p className="text-gray-400 text-base sm:text-lg px-4">Select your service and preferred time</p>
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -281,7 +281,7 @@ export default function BookPage() {
                   <label className="block text-sm font-medium mb-2 text-gray-300">
                     Time
                   </label>
-                  <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                     {timeSlots.length > 0 ? (
                       timeSlots.map((slot, index) => (
                         <motion.button
