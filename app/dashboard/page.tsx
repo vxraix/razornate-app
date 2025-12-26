@@ -21,6 +21,7 @@ import { PushNotificationSetup } from '@/components/push-notification-setup'
 import { ReferralProgram } from '@/components/referral-program'
 import { AftercareNotes } from '@/components/aftercare-notes'
 import { SocialShare } from '@/components/social-share'
+import { PaymentInstructions } from '@/components/payment-instructions'
 
 interface Appointment {
   id: string
@@ -32,6 +33,12 @@ interface Appointment {
     name: string
     price: number
     duration: number
+  }
+  payment?: {
+    id: string
+    status: string
+    amount: number
+    paymentReference: string | null
   }
 }
 
@@ -59,7 +66,22 @@ export default function DashboardPage() {
       const response = await fetch('/api/appointments')
       const data = await response.json()
       if (response.ok) {
-        setAppointments(data)
+        // Fetch payments for each appointment
+        const appointmentsWithPayments = await Promise.all(
+          data.map(async (apt: any) => {
+            try {
+              const paymentResponse = await fetch(`/api/payments/${apt.id}`)
+              if (paymentResponse.ok) {
+                const payment = await paymentResponse.json()
+                return { ...apt, payment }
+              }
+            } catch (error) {
+              // Payment might not exist yet, continue without it
+            }
+            return apt
+          })
+        )
+        setAppointments(appointmentsWithPayments)
       }
       
       // Fetch user loyalty points
@@ -247,6 +269,16 @@ export default function DashboardPage() {
                               <span className="text-gray-500">Notes: </span>
                               {appointment.notes}
                             </p>
+                          </div>
+                        )}
+                        {appointment.payment && appointment.payment.status !== 'PAID' && (
+                          <div className="pt-3 border-t border-gray-800">
+                            <PaymentInstructions
+                              appointmentId={appointment.id}
+                              amount={appointment.service.price}
+                              paymentReference={appointment.payment.paymentReference || `APT-${appointment.id.slice(0, 8).toUpperCase()}`}
+                              onProofUploaded={fetchAppointments}
+                            />
                           </div>
                         )}
                         <div className="flex gap-2 pt-2">

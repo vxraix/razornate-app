@@ -17,9 +17,43 @@ export async function PATCH(
     const body = await request.json()
     const { status, barberNotes } = body
 
+    // Get current appointment to check status change
+    const currentAppointment = await prisma.appointment.findUnique({
+      where: { id: params.id },
+      include: {
+        service: true,
+        payment: true,
+      },
+    })
+
+    if (!currentAppointment) {
+      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+    }
+
     const updateData: any = {}
     if (status) updateData.status = status
     if (barberNotes !== undefined) updateData.barberNotes = barberNotes
+
+    // Handle appointment completion - create/update payment and revenue tracking
+    if (status === 'COMPLETED' && currentAppointment.status !== 'COMPLETED') {
+      // Check if payment exists
+      let payment = currentAppointment.payment
+
+      if (!payment) {
+        // Create payment record if it doesn't exist
+        payment = await prisma.payment.create({
+          data: {
+            appointmentId: params.id,
+            amount: currentAppointment.service.price,
+            method: 'BANK_TRANSFER', // Default for Suriname
+            status: 'UNPAID',
+          },
+        })
+      }
+
+      // Revenue is only counted when appointment is COMPLETED AND payment is PAID
+      // This is handled in analytics queries, not here
+    }
 
     const appointment = await prisma.appointment.update({
       where: { id: params.id },
@@ -35,6 +69,7 @@ export async function PATCH(
           },
         },
         service: true,
+        payment: true,
       },
     })
 

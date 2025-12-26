@@ -31,14 +31,23 @@ export async function GET(request: Request) {
         break
     }
 
-    // Total Revenue
-    const payments = await prisma.payment.findMany({
+    // Total Revenue - Only count completed appointments with paid payments
+    const completedAppointments = await prisma.appointment.findMany({
       where: {
-        status: 'PAID',
+        status: 'COMPLETED',
         createdAt: { gte: startDate },
+        payment: {
+          status: 'PAID',
+        },
+      },
+      include: {
+        payment: true,
       },
     })
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0)
+    const totalRevenue = completedAppointments.reduce(
+      (sum, apt) => sum + (apt.payment?.amount || 0),
+      0
+    )
 
     // Total Appointments
     const totalAppointments = await prisma.appointment.count({
@@ -70,7 +79,7 @@ export async function GET(request: Request) {
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
         : 0
 
-    // Revenue Trend
+    // Revenue Trend - Only completed appointments with paid payments
     const revenueTrend = []
     const days = range === 'week' ? 7 : range === 'month' ? 30 : 365
     for (let i = days - 1; i >= 0; i--) {
@@ -81,16 +90,22 @@ export async function GET(request: Request) {
       const dayEnd = new Date(date)
       dayEnd.setHours(23, 59, 59, 999)
 
-      const dayPayments = await prisma.payment.findMany({
+      const dayAppointments = await prisma.appointment.findMany({
         where: {
-          status: 'PAID',
-          createdAt: { gte: dayStart, lte: dayEnd },
+          status: 'COMPLETED',
+          date: { gte: dayStart, lte: dayEnd },
+          payment: {
+            status: 'PAID',
+          },
+        },
+        include: {
+          payment: true,
         },
       })
 
       revenueTrend.push({
         date: date.toISOString().split('T')[0],
-        revenue: dayPayments.reduce((sum, p) => sum + p.amount, 0),
+        revenue: dayAppointments.reduce((sum, apt) => sum + (apt.payment?.amount || 0), 0),
       })
     }
 
@@ -139,11 +154,33 @@ export async function GET(request: Request) {
       })
     }
 
+    // Calculate additional metrics
+    const completedCount = await prisma.appointment.count({
+      where: {
+        status: 'COMPLETED',
+        createdAt: { gte: startDate },
+      },
+    })
+
+    const cancelledCount = await prisma.appointment.count({
+      where: {
+        status: 'CANCELLED',
+        createdAt: { gte: startDate },
+      },
+    })
+
+    const averageRevenuePerAppointment = completedCount > 0
+      ? totalRevenue / completedCount
+      : 0
+
     return NextResponse.json({
       totalRevenue,
       totalAppointments,
+      completedAppointments: completedCount,
+      cancelledAppointments: cancelledCount,
       activeClients: activeClients.length,
       averageRating,
+      averageRevenuePerAppointment,
       revenueTrend,
       servicePopularity,
       appointmentsOverTime,

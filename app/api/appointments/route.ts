@@ -93,9 +93,19 @@ export async function POST(request: Request) {
         date: appointmentDate,
         notes,
         status: 'PENDING',
+        // Create payment record with bank transfer as default for Suriname
+        payment: {
+          create: {
+            amount: service.price,
+            method: 'BANK_TRANSFER',
+            status: 'UNPAID',
+            paymentReference: `APT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+          },
+        },
       },
       include: {
         service: true,
+        payment: true,
       },
     })
 

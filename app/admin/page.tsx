@@ -262,6 +262,18 @@ export default function AdminPage() {
           >
             Analytics
           </Link>
+          <Link
+            href="/admin/payments"
+            className="px-4 sm:px-6 py-3 font-medium text-gray-400 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap flex-shrink-0"
+          >
+            Payments
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="px-4 sm:px-6 py-3 font-medium text-gray-400 hover:text-gray-300 border-b-2 border-transparent whitespace-nowrap flex-shrink-0"
+          >
+            Settings
+          </Link>
         </div>
 
         {/* Dashboard Tab */}

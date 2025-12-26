@@ -131,9 +131,18 @@ model Payment {
   id            String        @id @default(cuid())
   appointmentId String        @unique
   amount        Float
-  method        String?        // CASH, CARD, MOBILE
-  status        String          @default("PENDING") // PENDING, PAID, REFUNDED
+  method        String?        // CASH, CARD, MOBILE, BANK_TRANSFER
+  status        String          @default("UNPAID") // UNPAID, PENDING_VERIFICATION, PAID, REFUNDED
   depositAmount Float?
+  // Bank transfer fields
+  bankName      String?        // Hakrinbank, DSB Bank, etc.
+  accountNumber String?
+  accountHolder String?
+  paymentReference String?     // Appointment ID or custom reference
+  proofUrl      String?         // URL to uploaded payment proof
+  verifiedAt    DateTime?       // When admin verified the payment
+  verifiedBy    String?         // Admin user ID who verified
+  notes         String?         // Admin notes about payment
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   

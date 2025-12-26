@@ -81,27 +81,83 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
-      // Handle OAuth providers
-      if (account && !user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email! }
+      // Handle OAuth providers - link accounts properly
+      if (account) {
+        // Check if account already exists
+        const existingAccount = await prisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          include: { user: true },
         })
-        
-        if (dbUser) {
-          token.role = dbUser.role
-          token.id = dbUser.id
+
+        if (existingAccount) {
+          // Account exists, use existing user
+          token.role = existingAccount.user.role
+          token.id = existingAccount.user.id
         } else if (token.email) {
-          // Create user on first OAuth login
-          const newUser = await prisma.user.create({
-            data: {
-              email: token.email,
-              name: token.name || token.email.split('@')[0],
-              image: token.picture,
-              role: 'CLIENT',
-            }
+          // Check if user exists with this email (link accounts)
+          const existingUser = await prisma.user.findUnique({
+            where: { email: token.email },
           })
-          token.role = newUser.role
-          token.id = newUser.id
+
+          if (existingUser) {
+            // Link OAuth account to existing user
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state,
+              },
+            })
+            // Update user image if from OAuth
+            if (token.picture && !existingUser.image) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { image: token.picture },
+              })
+            }
+            token.role = existingUser.role
+            token.id = existingUser.id
+          } else {
+            // Create new user with OAuth account
+            const newUser = await prisma.user.create({
+              data: {
+                email: token.email,
+                name: token.name || token.email.split('@')[0],
+                image: token.picture,
+                role: 'CLIENT',
+                emailVerified: new Date(),
+                accounts: {
+                  create: {
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    refresh_token: account.refresh_token,
+                    access_token: account.access_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                    session_state: account.session_state,
+                  },
+                },
+              },
+            })
+            token.role = newUser.role
+            token.id = newUser.id
+          }
         }
       }
       
