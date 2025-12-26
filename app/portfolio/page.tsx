@@ -43,15 +43,15 @@ export default function PortfolioPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black px-4 py-8 md:py-12">
+    <div className="min-h-screen bg-black">
       <Navbar />
-      <div className="container mx-auto max-w-6xl">
-        <div className="mb-8 text-center">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-8 md:py-12">
+        <div className="mb-8 md:mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Portfolio</h1>
           <p className="text-gray-400 text-lg">Our latest work and styles</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {images.map((image) => (
             <Card
               key={image.id}

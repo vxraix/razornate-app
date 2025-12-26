@@ -65,19 +65,19 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8 md:py-12">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center pb-6">
           <div className="flex justify-center mb-4">
             <Scissors className="w-12 h-12 text-gold-500" />
           </div>
-          <CardTitle className="text-3xl">Create Account</CardTitle>
+          <CardTitle className="text-3xl mb-2">Create Account</CardTitle>
           <CardDescription>Join Razornate to book your appointments</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-300">
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
                 Full Name
               </label>
               <Input
@@ -89,8 +89,8 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-300">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email
               </label>
               <Input
@@ -102,8 +102,8 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium mb-2 text-gray-300">
+            <div className="space-y-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
                 Phone Number
               </label>
               <Input
@@ -114,8 +114,8 @@ export default function SignUpPage() {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2 text-gray-300">
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
               <Input

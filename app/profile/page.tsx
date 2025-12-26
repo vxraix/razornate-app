@@ -12,7 +12,7 @@ import { User, Phone, Mail, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
-  const { data: session, update } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -23,34 +23,36 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-
-    // Fetch user profile
-    fetch('/api/user/profile')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
+    
+    if (status === 'authenticated' && session) {
+      // Fetch user profile
+      fetch('/api/user/profile')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data) {
+            setFormData({
+              name: data.name || '',
+              email: data.email || '',
+              phone: data.phone || '',
+              notes: data.notes || '',
+            })
+          }
+        })
+        .catch(() => {
+          // Set from session if API fails
           setFormData({
-            name: data.name || '',
-            email: data.email || '',
-            phone: data.phone || '',
-            notes: data.notes || '',
-          })
-        }
-      })
-      .catch(() => {
-        // Set from session if API fails
-        setFormData({
-          name: session.user?.name || '',
+            name: session.user?.name || '',
           email: session.user?.email || '',
           phone: '',
           notes: '',
         })
       })
-  }, [session, router])
+    }
+  }, [session, status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

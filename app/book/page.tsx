@@ -29,7 +29,7 @@ interface TimeSlot {
 }
 
 export default function BookPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [services, setServices] = useState<Service[]>([])
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -43,12 +43,14 @@ export default function BookPage() {
   const [discount, setDiscount] = useState(0)
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin?callbackUrl=/book')
       return
     }
-    fetchServices()
-  }, [session, router])
+    if (status === 'authenticated' && session) {
+      fetchServices()
+    }
+  }, [session, status, router])
 
   const fetchServices = async () => {
     try {

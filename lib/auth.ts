@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import AppleProvider from 'next-auth/providers/apple'
 import { prisma } from './prisma'
+import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -26,19 +27,23 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // For demo purposes - accept any password
-        // In production, store hashed passwords and verify them
-        // Fetch fresh user data to ensure role is current
-        const freshUser = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
+        // Verify password if user has one stored (credentials auth)
+        if (user.password) {
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password)
+          if (!isValidPassword) {
+            return null
+          }
+        } else {
+          // If no password stored (OAuth user), reject credentials login
+          return null
+        }
         
         return {
-          id: freshUser!.id,
-          email: freshUser!.email,
-          name: freshUser!.name,
-          image: freshUser!.image,
-          role: freshUser!.role, // Use fresh role from database
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
         }
       }
     }),

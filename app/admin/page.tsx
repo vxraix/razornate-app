@@ -42,7 +42,7 @@ interface Appointment {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'appointments'>('dashboard')
   const [services, setServices] = useState<Service[]>([])
@@ -57,30 +57,26 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
     
-    // Debug: Log session info
-    console.log('Session:', session)
-    console.log('User role:', session.user?.role)
-    
-    // Check role - handle both string and case variations
-    const userRole = String(session.user?.role || '').toUpperCase().trim()
-    if (userRole !== 'ADMIN') {
-      console.log('Access denied. User role:', userRole, 'Expected: ADMIN')
-      console.log('Full session user:', session.user)
-      // Don't redirect immediately, show a message first
-      toast.error('Admin access required. Please sign in with an admin account.')
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 2000)
-      return
+    if (status === 'authenticated' && session) {
+      // Check role - handle both string and case variations
+      const userRole = String(session.user?.role || '').toUpperCase().trim()
+      if (userRole !== 'ADMIN') {
+        // Don't redirect immediately, show a message first
+        toast.error('Admin access required. Please sign in with an admin account.')
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 2000)
+        return
+      }
+      fetchServices()
+      fetchAppointments()
     }
-    fetchServices()
-    fetchAppointments()
-  }, [session, router])
+  }, [session, status, router])
 
   const fetchServices = async () => {
     try {
@@ -419,7 +415,6 @@ export default function AdminPage() {
               <AdvancedFilters
                 onFilter={(filters) => {
                   // Filter logic can be added here
-                  console.log('Filters:', filters)
                 }}
                 services={services}
                 showSearch={true}

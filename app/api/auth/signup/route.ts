@@ -29,13 +29,13 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user (Note: Prisma schema doesn't have password field, so we'll skip it for now)
-    // In production, you'd add a password field to the User model
+    // Create user with hashed password
     const user = await prisma.user.create({
       data: {
         email,
         name,
         phone,
+        password: hashedPassword,
         role: 'CLIENT',
       },
     })

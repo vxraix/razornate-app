@@ -35,7 +35,7 @@ import {
 const COLORS = ['#D4AF37', '#FFD700', '#FFA500', '#FF6347', '#32CD32']
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [analytics, setAnalytics] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -56,18 +56,19 @@ export default function AnalyticsPage() {
   }, [dateRange])
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
 
-    if (session.user?.role !== 'ADMIN') {
-      router.push('/dashboard')
-      return
+    if (status === 'authenticated' && session) {
+      if (session.user?.role !== 'ADMIN') {
+        router.push('/dashboard')
+        return
+      }
+      fetchAnalytics()
     }
-
-    fetchAnalytics()
-  }, [session, router, dateRange, fetchAnalytics])
+  }, [session, status, router, dateRange, fetchAnalytics])
 
   const exportData = async (format: 'csv' | 'json') => {
     try {

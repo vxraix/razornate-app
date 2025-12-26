@@ -9,7 +9,7 @@ interface WhatsAppButtonProps {
 }
 
 export function WhatsAppButton({ 
-  phoneNumber = '+1234567890', 
+  phoneNumber = '+5978814672', 
   message = 'Hello! I would like to book an appointment.' 
 }: WhatsAppButtonProps) {
   const handleClick = () => {

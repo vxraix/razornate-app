@@ -36,7 +36,7 @@ interface Appointment {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -45,12 +45,14 @@ export default function DashboardPage() {
   const [reviewAppointment, setReviewAppointment] = useState<Appointment | null>(null)
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-    fetchAppointments()
-  }, [session, router])
+    if (status === 'authenticated' && session) {
+      fetchAppointments()
+    }
+  }, [session, status, router])
 
   const fetchAppointments = async () => {
     try {

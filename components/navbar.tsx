@@ -9,10 +9,9 @@ import { useState } from 'react'
 export function Navbar() {
   const { data: session } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  console.log(session)
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-800/50 glass-strong">
-      <div className="container mx-auto px-4">
+    <nav className="sticky top-0 z-50 border-b border-gray-800/50 bg-black/95 backdrop-blur-md">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Scissors className="w-6 h-6 text-gold-500" />
