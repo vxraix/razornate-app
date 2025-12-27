@@ -23,6 +23,9 @@ import {
   Plus,
   Edit,
   Trash2,
+  CheckCircle,
+  XCircle,
+  Save,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -70,6 +73,14 @@ export default function AdminPage() {
     description: "",
     duration: "30",
     price: "",
+  });
+  const [editingAppointment, setEditingAppointment] =
+    useState<Appointment | null>(null);
+  const [appointmentEditForm, setAppointmentEditForm] = useState({
+    status: "",
+    barberNotes: "",
+    date: "",
+    time: "",
   });
 
   useEffect(() => {
@@ -176,6 +187,52 @@ export default function AdminPage() {
       fetchAppointments();
     } catch (error: any) {
       toast.error(error.message);
+    }
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    const appointmentDate = new Date(appointment.date);
+    setEditingAppointment(appointment);
+    setAppointmentEditForm({
+      status: appointment.status,
+      barberNotes: (appointment as any).barberNotes || "",
+      date: appointmentDate.toISOString().split("T")[0],
+      time: appointmentDate.toTimeString().slice(0, 5),
+    });
+  };
+
+  const handleSaveAppointment = async () => {
+    if (!editingAppointment) return;
+
+    try {
+      const updateData: any = {
+        status: appointmentEditForm.status,
+        barberNotes: appointmentEditForm.barberNotes,
+      };
+
+      // If date/time changed, update the date
+      if (appointmentEditForm.date && appointmentEditForm.time) {
+        const newDate = new Date(
+          `${appointmentEditForm.date}T${appointmentEditForm.time}`
+        );
+        updateData.date = newDate.toISOString();
+      }
+
+      const response = await fetch(
+        `/api/admin/appointments/${editingAppointment.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update appointment");
+      toast.success("Appointment updated successfully");
+      setEditingAppointment(null);
+      fetchAppointments();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update appointment");
     }
   };
 
@@ -568,8 +625,8 @@ export default function AdminPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge>{appointment.status}</Badge>
                           <span className="text-sm text-gray-400">
                             {appointment.user.name || appointment.user.email}
@@ -582,8 +639,18 @@ export default function AdminPage() {
                         </div>
                         {appointment.notes && (
                           <p className="text-sm text-gray-400">
-                            <span className="text-gray-500">Notes: </span>
+                            <span className="text-gray-500">
+                              Client Notes:{" "}
+                            </span>
                             {appointment.notes}
+                          </p>
+                        )}
+                        {(appointment as any).barberNotes && (
+                          <p className="text-sm text-gray-400">
+                            <span className="text-gray-500">
+                              Barber Notes:{" "}
+                            </span>
+                            {(appointment as any).barberNotes}
                           </p>
                         )}
                         <p className="text-sm">
@@ -592,6 +659,66 @@ export default function AdminPage() {
                             ${appointment.service.price.toFixed(2)}
                           </span>
                         </p>
+
+                        {/* Quick Action Buttons */}
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-800">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditAppointment(appointment)}
+                            className="flex-1 sm:flex-none"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                          {appointment.status === "PENDING" && (
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleUpdateAppointmentStatus(
+                                  appointment.id,
+                                  "CONFIRMED"
+                                )
+                              }
+                              className="flex-1 sm:flex-none"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Confirm
+                            </Button>
+                          )}
+                          {appointment.status !== "COMPLETED" &&
+                            appointment.status !== "CANCELLED" && (
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleUpdateAppointmentStatus(
+                                    appointment.id,
+                                    "COMPLETED"
+                                  )
+                                }
+                                className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Complete
+                              </Button>
+                            )}
+                          {appointment.status !== "CANCELLED" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleUpdateAppointmentStatus(
+                                  appointment.id,
+                                  "CANCELLED"
+                                )
+                              }
+                              className="flex-1 sm:flex-none border-red-500 text-red-500 hover:bg-red-500/10"
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -599,6 +726,141 @@ export default function AdminPage() {
               ))}
             </div>
           </motion.div>
+        )}
+
+        {/* Edit Appointment Modal */}
+        {editingAppointment && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative w-full max-w-2xl bg-gray-900 rounded-lg border border-gray-800 p-6 max-h-[90vh] overflow-y-auto"
+            >
+              <h2 className="text-2xl font-bold mb-4">Edit Appointment</h2>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
+                    Status
+                  </label>
+                  <select
+                    value={appointmentEditForm.status}
+                    onChange={(e) =>
+                      setAppointmentEditForm({
+                        ...appointmentEditForm,
+                        status: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="CONFIRMED">Confirmed</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-300">
+                      Date
+                    </label>
+                    <Input
+                      type="date"
+                      value={appointmentEditForm.date}
+                      onChange={(e) =>
+                        setAppointmentEditForm({
+                          ...appointmentEditForm,
+                          date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-300">
+                      Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={appointmentEditForm.time}
+                      onChange={(e) =>
+                        setAppointmentEditForm({
+                          ...appointmentEditForm,
+                          time: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
+                    Barber Notes
+                  </label>
+                  <Textarea
+                    value={appointmentEditForm.barberNotes}
+                    onChange={(e) =>
+                      setAppointmentEditForm({
+                        ...appointmentEditForm,
+                        barberNotes: e.target.value,
+                      })
+                    }
+                    placeholder="Add notes about this appointment..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="p-4 bg-gray-800/50 rounded-lg">
+                  <p className="text-sm text-gray-400 mb-2">
+                    Appointment Details
+                  </p>
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <span className="text-gray-500">Service: </span>
+                      <span className="text-white">
+                        {editingAppointment.service.name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">Customer: </span>
+                      <span className="text-white">
+                        {editingAppointment.user.name ||
+                          editingAppointment.user.email}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">Price: </span>
+                      <span className="text-gold-500 font-semibold">
+                        ${editingAppointment.service.price.toFixed(2)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingAppointment(null);
+                    setAppointmentEditForm({
+                      status: "",
+                      barberNotes: "",
+                      date: "",
+                      time: "",
+                    });
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveAppointment} className="flex-1">
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Changes
+                </Button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </div>
     </div>
