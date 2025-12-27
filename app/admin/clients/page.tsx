@@ -39,6 +39,7 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clientNotes, setClientNotes] = useState('')
+  const [loyaltyPoints, setLoyaltyPoints] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -78,6 +79,33 @@ export default function ClientsPage() {
       fetchClients()
       if (selectedClient) {
         setSelectedClient({ ...selectedClient, notes: clientNotes })
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleSaveLoyaltyPoints = async () => {
+    if (!selectedClient) return
+
+    const points = parseInt(loyaltyPoints)
+    if (isNaN(points) || points < 0) {
+      toast.error('Please enter a valid number')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/clients/${selectedClient.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loyaltyPoints: points }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update loyalty points')
+      toast.success('Loyalty points updated')
+      fetchClients()
+      if (selectedClient) {
+        setSelectedClient({ ...selectedClient, loyaltyPoints: points })
       }
     } catch (error: any) {
       toast.error(error.message)
@@ -144,6 +172,7 @@ export default function ClientsPage() {
                     onClick={() => {
                       setSelectedClient(client)
                       setClientNotes(client.notes || '')
+                      setLoyaltyPoints(client.loyaltyPoints.toString())
                     }}
                   >
                     <CardContent className="p-4">
@@ -231,6 +260,24 @@ export default function ClientsPage() {
                         <span className="text-white">{selectedClient.loyaltyPoints}</span>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-800">
+                    <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                      <Edit className="w-4 h-4" />
+                      Loyalty Points
+                    </h4>
+                    <Input
+                      type="number"
+                      value={loyaltyPoints}
+                      onChange={(e) => setLoyaltyPoints(e.target.value)}
+                      placeholder="Enter loyalty points"
+                      min="0"
+                      className="mb-2"
+                    />
+                    <Button onClick={handleSaveLoyaltyPoints} size="sm" className="w-full">
+                      Update Points
+                    </Button>
                   </div>
 
                   <div className="pt-4 border-t border-gray-800">

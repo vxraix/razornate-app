@@ -82,6 +82,7 @@ export default function AdminPage() {
     date: "",
     time: "",
   });
+  const [showCancelled, setShowCancelled] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -107,7 +108,7 @@ export default function AdminPage() {
       fetchServices();
       fetchAppointments();
     }
-  }, [session, status, router]);
+  }, [session, status, router, showCancelled]);
 
   const fetchServices = async () => {
     try {
@@ -123,7 +124,8 @@ export default function AdminPage() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await fetch("/api/admin/appointments");
+      const url = `/api/admin/appointments${showCancelled ? '?includeCancelled=true' : ''}`;
+      const response = await fetch(url);
       const data = await response.json();
       if (response.ok) {
         setAppointments(data);
@@ -561,7 +563,18 @@ export default function AdminPage() {
             <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">
               All Appointments
             </h2>
-            <div className="mb-6">
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showCancelled}
+                    onChange={(e) => setShowCancelled(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-gold-500 focus:ring-gold-500 focus:ring-offset-gray-900"
+                  />
+                  <span>Show cancelled appointments</span>
+                </label>
+              </div>
               <AdvancedFilters
                 onFilter={(filters) => {
                   // Filter logic can be added here

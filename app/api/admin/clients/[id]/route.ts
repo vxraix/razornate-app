@@ -14,11 +14,15 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { notes } = body
+    const { notes, loyaltyPoints } = body
+
+    const updateData: any = {}
+    if (notes !== undefined) updateData.notes = notes
+    if (loyaltyPoints !== undefined) updateData.loyaltyPoints = loyaltyPoints
 
     const user = await prisma.user.update({
       where: { id: params.id },
-      data: { notes },
+      data: updateData,
     })
 
     return NextResponse.json(user)

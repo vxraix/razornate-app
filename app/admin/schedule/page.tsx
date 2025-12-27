@@ -41,14 +41,20 @@ export default function SchedulePage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [barberNotes, setBarberNotes] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [showCancelled, setShowCancelled] = useState(false)
 
   const fetchAppointments = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/appointments?date=${selectedDate}`)
+      const url = `/api/admin/appointments?date=${selectedDate}${showCancelled ? '&includeCancelled=true' : ''}`
+      const response = await fetch(url)
       const data = await response.json()
       if (response.ok) {
         setAppointments(data)
-        if (data.length > 0 && !selectedAppointment) {
+        // If selected appointment is no longer in the list, clear it
+        if (selectedAppointment && !data.find((apt: Appointment) => apt.id === selectedAppointment.id)) {
+          setSelectedAppointment(null)
+          setBarberNotes('')
+        } else if (data.length > 0 && !selectedAppointment) {
           setSelectedAppointment(data[0])
           setBarberNotes(data[0].barberNotes || '')
         }
@@ -58,7 +64,7 @@ export default function SchedulePage() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedDate, selectedAppointment])
+  }, [selectedDate, selectedAppointment, showCancelled])
 
   useEffect(() => {
     if (!session || session.user?.role !== 'ADMIN') {
@@ -130,13 +136,22 @@ export default function SchedulePage() {
           <p className="text-gray-400 text-sm sm:text-base">Manage your appointments</p>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-900 text-white"
           />
+          <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showCancelled}
+              onChange={(e) => setShowCancelled(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-gold-500 focus:ring-gold-500 focus:ring-offset-gray-900"
+            />
+            <span>Show cancelled appointments</span>
+          </label>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">

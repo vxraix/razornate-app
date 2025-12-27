@@ -15,6 +15,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
+    const includeCancelled = searchParams.get('includeCancelled') === 'true'
 
     const where: any = {}
     if (date) {
@@ -25,6 +26,13 @@ export async function GET(request: Request) {
       where.date = {
         gte: startOfDay,
         lte: endOfDay,
+      }
+    }
+    
+    // Exclude cancelled appointments by default unless explicitly requested
+    if (!includeCancelled) {
+      where.status = {
+        not: 'CANCELLED',
       }
     }
 
