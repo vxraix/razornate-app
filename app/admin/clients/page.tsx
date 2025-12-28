@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/navbar'
-import { User, Phone, Mail, Calendar, Search, Edit } from 'lucide-react'
+import { User, Phone, Mail, Calendar, Search, Edit, Minus, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -39,6 +39,8 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clientNotes, setClientNotes] = useState('')
+  const [loyaltyPointsAdjustment, setLoyaltyPointsAdjustment] = useState('')
+  const [loyaltyPointsSet, setLoyaltyPointsSet] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -79,6 +81,56 @@ export default function ClientsPage() {
       if (selectedClient) {
         setSelectedClient({ ...selectedClient, notes: clientNotes })
       }
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleAdjustLoyaltyPoints = async (adjustment: number) => {
+    if (!selectedClient) return
+
+    try {
+      const response = await fetch(`/api/admin/clients/${selectedClient.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loyaltyPointsAdjustment: adjustment }),
+      })
+
+      if (!response.ok) throw new Error('Failed to adjust loyalty points')
+      toast.success(`Loyalty points ${adjustment >= 0 ? 'added' : 'removed'} successfully`)
+      setLoyaltyPointsAdjustment('')
+      fetchClients()
+      // Update selected client
+      const updatedClient = await response.json()
+      setSelectedClient({ ...selectedClient, loyaltyPoints: updatedClient.loyaltyPoints })
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleSetLoyaltyPoints = async () => {
+    if (!selectedClient || !loyaltyPointsSet) return
+
+    const points = parseInt(loyaltyPointsSet)
+    if (isNaN(points) || points < 0) {
+      toast.error('Please enter a valid number (0 or greater)')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/clients/${selectedClient.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loyaltyPoints: points }),
+      })
+
+      if (!response.ok) throw new Error('Failed to set loyalty points')
+      toast.success('Loyalty points updated successfully')
+      setLoyaltyPointsSet('')
+      fetchClients()
+      // Update selected client
+      const updatedClient = await response.json()
+      setSelectedClient({ ...selectedClient, loyaltyPoints: updatedClient.loyaltyPoints })
     } catch (error: any) {
       toast.error(error.message)
     }
@@ -144,6 +196,8 @@ export default function ClientsPage() {
                     onClick={() => {
                       setSelectedClient(client)
                       setClientNotes(client.notes || '')
+                      setLoyaltyPointsAdjustment('')
+                      setLoyaltyPointsSet('')
                     }}
                   >
                     <CardContent className="p-4">
@@ -226,9 +280,100 @@ export default function ClientsPage() {
                           ${totalSpent(selectedClient).toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-400">Loyalty Points:</span>
-                        <span className="text-white">{selectedClient.loyaltyPoints}</span>
+                        <span className="text-white font-semibold">{selectedClient.loyaltyPoints} pts</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-800">
+                    <h4 className="font-semibold text-white mb-3">Manage Loyalty Points</h4>
+                    <div className="space-y-3">
+                      {/* Quick Actions */}
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAdjustLoyaltyPoints(-10)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/50"
+                          disabled={selectedClient.loyaltyPoints < 10}
+                        >
+                          <Minus className="w-4 h-4 mr-1" />
+                          Remove 10
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAdjustLoyaltyPoints(-selectedClient.loyaltyPoints)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/50"
+                          disabled={selectedClient.loyaltyPoints === 0}
+                        >
+                          <Minus className="w-4 h-4 mr-1" />
+                          Remove All
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAdjustLoyaltyPoints(10)}
+                          className="text-green-500 hover:text-green-600 hover:bg-green-500/10 border-green-500/50"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add 10
+                        </Button>
+                      </div>
+                      
+                      {/* Custom Adjustment */}
+                      <div className="space-y-2">
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Adjust Points (add/remove)</label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              placeholder="e.g., -10 or +10"
+                              value={loyaltyPointsAdjustment}
+                              onChange={(e) => setLoyaltyPointsAdjustment(e.target.value)}
+                              className="flex-1"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const amount = parseInt(loyaltyPointsAdjustment)
+                                if (!isNaN(amount) && amount !== 0) {
+                                  handleAdjustLoyaltyPoints(amount)
+                                }
+                              }}
+                              disabled={!loyaltyPointsAdjustment || parseInt(loyaltyPointsAdjustment) === 0}
+                            >
+                              Adjust
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Set Absolute Value */}
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Set Points (exact amount)</label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              placeholder="Set to specific amount"
+                              value={loyaltyPointsSet}
+                              onChange={(e) => setLoyaltyPointsSet(e.target.value)}
+                              className="flex-1"
+                              min="0"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleSetLoyaltyPoints}
+                              disabled={!loyaltyPointsSet}
+                              className="border-gold-500 text-gold-500 hover:bg-gold-500/10"
+                            >
+                              Set
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
@@ -9,8 +9,6 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Razornate - Premium Barber Booking',
   description: 'Book your premium barber appointment with Razornate',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
-  themeColor: '#D4AF37',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -21,6 +19,13 @@ export const metadata: Metadata = {
     icon: '/icon-192x192.png',
     apple: '/icon-192x192.png',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#D4AF37',
 }
 
 export default function RootLayout({
