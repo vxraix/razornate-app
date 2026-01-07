@@ -151,8 +151,10 @@ export async function POST(request: Request) {
       }
 
       // Send admin notification email
+      const adminEmail =
+        process.env.ADMIN_EMAIL || "nathanwijnaldum1@gmail.com";
       if (process.env.RESEND_API_KEY) {
-        await sendAdminAppointmentNotification(
+        const adminNotificationResult = await sendAdminAppointmentNotification(
           {
             appointmentId: appointment.id,
             userName: appointment.user.name || "Valued Customer",
@@ -165,7 +167,22 @@ export async function POST(request: Request) {
             paymentReference: appointment.payment?.paymentReference || null,
             amount: appointment.payment?.amount || null,
           },
-          "nathanwijnaldum1@gmail.com"
+          adminEmail
+        );
+
+        if (!adminNotificationResult.success) {
+          console.error(
+            `Failed to send admin notification email to ${adminEmail}:`,
+            adminNotificationResult.error
+          );
+        } else {
+          console.log(
+            `Admin notification email sent successfully to ${adminEmail}`
+          );
+        }
+      } else {
+        console.warn(
+          "RESEND_API_KEY not configured. Admin notification email not sent."
         );
       }
     } catch (notificationError) {
