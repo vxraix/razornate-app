@@ -190,29 +190,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteAppointment = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/admin/appointments/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete appointment");
-      toast.success("Appointment deleted successfully");
-      fetchAppointments();
-      
-      // Clear editing appointment if it was deleted
-      if (editingAppointment?.id === id) {
-        setEditingAppointment(null);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete appointment");
-    }
-  };
-
   const handleEditAppointment = (appointment: Appointment) => {
     const appointmentDate = new Date(appointment.date);
     setEditingAppointment(appointment);
@@ -741,15 +718,6 @@ export default function AdminPage() {
                               Cancel
                             </Button>
                           )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteAppointment(appointment.id)}
-                            className="flex-1 sm:flex-none border-red-500 text-red-500 hover:bg-red-500/10"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </Button>
                         </div>
                       </div>
                     </CardContent>

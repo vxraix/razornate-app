@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Navbar } from '@/components/navbar'
-import { Clock, CheckCircle, XCircle, Phone, Mail, User, MessageSquare, Trash2 } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Phone, Mail, User, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatTime, formatDate } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -99,31 +99,6 @@ export default function SchedulePage() {
       fetchAppointments()
     } catch (error: any) {
       toast.error(error.message)
-    }
-  }
-
-  const handleDeleteAppointment = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/admin/appointments/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Failed to delete appointment')
-      toast.success('Appointment deleted successfully')
-      
-      // Clear selected appointment if it was deleted
-      if (selectedAppointment?.id === id) {
-        setSelectedAppointment(null)
-        setBarberNotes('')
-      }
-      
-      fetchAppointments()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete appointment')
     }
   }
 
@@ -218,26 +193,13 @@ export default function SchedulePage() {
                             </p>
                           )}
                         </div>
-                        <div className="text-right flex flex-col items-end gap-2">
-                          <div>
-                            <p className="text-gold-500 font-semibold">
-                              ${appointment.service.price.toFixed(2)}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {appointment.service.duration} min
-                            </p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteAppointment(appointment.id)
-                            }}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/50"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                        <div className="text-right">
+                          <p className="text-gold-500 font-semibold">
+                            ${appointment.service.price.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {appointment.service.duration} min
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -355,15 +317,6 @@ export default function SchedulePage() {
                         Cancel
                       </Button>
                     )}
-                    <Button
-                      onClick={() => handleDeleteAppointment(selectedAppointment.id)}
-                      variant="outline"
-                      className="w-full text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/50"
-                      size="sm"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Appointment
-                    </Button>
                   </div>
                 </CardContent>
               </Card>

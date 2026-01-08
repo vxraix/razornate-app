@@ -14,29 +14,11 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { notes, loyaltyPoints, loyaltyPointsAdjustment } = body
-
-    const updateData: any = {}
-    if (notes !== undefined) updateData.notes = notes
-    
-    // Handle loyalty points adjustment
-    if (loyaltyPoints !== undefined) {
-      // Set absolute value
-      updateData.loyaltyPoints = Math.max(0, loyaltyPoints) // Ensure non-negative
-    } else if (loyaltyPointsAdjustment !== undefined) {
-      // Adjust by relative amount (can be negative to remove points)
-      const currentUser = await prisma.user.findUnique({
-        where: { id: params.id },
-        select: { loyaltyPoints: true },
-      })
-      if (currentUser) {
-        updateData.loyaltyPoints = Math.max(0, currentUser.loyaltyPoints + loyaltyPointsAdjustment)
-      }
-    }
+    const { notes } = body
 
     const user = await prisma.user.update({
       where: { id: params.id },
-      data: updateData,
+      data: { notes },
     })
 
     return NextResponse.json(user)

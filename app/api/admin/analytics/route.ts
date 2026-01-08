@@ -31,25 +31,21 @@ export async function GET(request: Request) {
         break
     }
 
-    // Total Revenue - Count all completed appointments (use service price if payment doesn't exist or amount is 0)
+    // Total Revenue - Only count completed appointments with paid payments
     const completedAppointments = await prisma.appointment.findMany({
       where: {
         status: 'COMPLETED',
         createdAt: { gte: startDate },
+        payment: {
+          status: 'PAID',
+        },
       },
       include: {
         payment: true,
-        service: true,
       },
     })
     const totalRevenue = completedAppointments.reduce(
-      (sum, apt) => {
-        // Use payment amount if it exists and is > 0, otherwise use service price
-        const amount = apt.payment?.amount && apt.payment.amount > 0 
-          ? apt.payment.amount 
-          : apt.service.price
-        return sum + amount
-      },
+      (sum, apt) => sum + (apt.payment?.amount || 0),
       0
     )
 
@@ -83,7 +79,7 @@ export async function GET(request: Request) {
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
         : 0
 
-    // Revenue Trend - All completed appointments
+    // Revenue Trend - Only completed appointments with paid payments
     const revenueTrend = []
     const days = range === 'week' ? 7 : range === 'month' ? 30 : 365
     for (let i = days - 1; i >= 0; i--) {
@@ -98,22 +94,18 @@ export async function GET(request: Request) {
         where: {
           status: 'COMPLETED',
           date: { gte: dayStart, lte: dayEnd },
+          payment: {
+            status: 'PAID',
+          },
         },
         include: {
           payment: true,
-          service: true,
         },
       })
 
       revenueTrend.push({
         date: date.toISOString().split('T')[0],
-        revenue: dayAppointments.reduce((sum, apt) => {
-          // Use payment amount if it exists and is > 0, otherwise use service price
-          const amount = apt.payment?.amount && apt.payment.amount > 0 
-            ? apt.payment.amount 
-            : apt.service.price
-          return sum + amount
-        }, 0),
+        revenue: dayAppointments.reduce((sum, apt) => sum + (apt.payment?.amount || 0), 0),
       })
     }
 
