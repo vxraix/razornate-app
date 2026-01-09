@@ -22,7 +22,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 export function SocialLinks({ className = '' }: SocialLinksProps) {
   const socialLinks = [
     { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:text-pink-500' },
-    { icon: TikTokIcon, href: '#', label: 'TikTok', color: 'hover:text-black dark:hover:text-white' },
+    { icon: TikTokIcon, href: 'https://www.tiktok.com/@razornatenw', label: 'TikTok', color: 'hover:text-black dark:hover:text-white' },
   ]
 
   return (
