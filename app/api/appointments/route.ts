@@ -151,9 +151,7 @@ export async function POST(request: Request) {
       }
 
       // Send admin notification email
-      const adminEmail =
-        // process.env.ADMIN_EMAIL || 
-        "razornatew@gmail.com";
+      const adminEmail = process.env.ADMIN_EMAIL || "razornatew@gmail.com";
       if (process.env.RESEND_API_KEY) {
         const adminNotificationResult = await sendAdminAppointmentNotification(
           {
