@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
@@ -84,6 +84,31 @@ export default function AdminPage() {
   });
   const [showCancelled, setShowCancelled] = useState(false);
 
+  const fetchServices = useCallback(async () => {
+    try {
+      const response = await fetch("/api/services");
+      const data = await response.json();
+      if (response.ok) {
+        setServices(data);
+      }
+    } catch (error) {
+      toast.error("Failed to load services");
+    }
+  }, []);
+
+  const fetchAppointments = useCallback(async () => {
+    try {
+      const url = `/api/admin/appointments${showCancelled ? '?includeCancelled=true' : ''}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (response.ok) {
+        setAppointments(data);
+      }
+    } catch (error) {
+      toast.error("Failed to load appointments");
+    }
+  }, [showCancelled]);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
@@ -108,32 +133,8 @@ export default function AdminPage() {
       fetchServices();
       fetchAppointments();
     }
-  }, [session, status, router, showCancelled]);
+  }, [session, status, router, fetchServices, fetchAppointments]);
 
-  const fetchServices = async () => {
-    try {
-      const response = await fetch("/api/services");
-      const data = await response.json();
-      if (response.ok) {
-        setServices(data);
-      }
-    } catch (error) {
-      toast.error("Failed to load services");
-    }
-  };
-
-  const fetchAppointments = async () => {
-    try {
-      const url = `/api/admin/appointments${showCancelled ? '?includeCancelled=true' : ''}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (response.ok) {
-        setAppointments(data);
-      }
-    } catch (error) {
-      toast.error("Failed to load appointments");
-    }
-  };
 
   const handleServiceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

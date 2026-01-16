@@ -83,3 +83,46 @@ export async function PATCH(
   }
 }
 
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: params.id },
+      include: {
+        payment: true,
+      },
+    })
+
+    if (!appointment) {
+      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+    }
+
+    // Delete associated payment if it exists
+    if (appointment.payment) {
+      await prisma.payment.delete({
+        where: { id: appointment.payment.id },
+      })
+    }
+
+    // Delete the appointment
+    await prisma.appointment.delete({
+      where: { id: params.id },
+    })
+
+    return NextResponse.json({ message: 'Appointment deleted successfully' })
+  } catch (error: any) {
+    console.error('Error deleting appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete appointment' },
+      { status: 500 }
+    )
+  }
+}
