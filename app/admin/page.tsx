@@ -98,7 +98,9 @@ export default function AdminPage() {
 
   const fetchAppointments = useCallback(async () => {
     try {
-      const url = `/api/admin/appointments${showCancelled ? '?includeCancelled=true' : ''}`;
+      const url = `/api/admin/appointments${
+        showCancelled ? "?includeCancelled=true" : ""
+      }`;
       const response = await fetch(url);
       const data = await response.json();
       if (response.ok) {
@@ -134,7 +136,6 @@ export default function AdminPage() {
       fetchAppointments();
     }
   }, [session, status, router, fetchServices, fetchAppointments]);
-
 
   const handleServiceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

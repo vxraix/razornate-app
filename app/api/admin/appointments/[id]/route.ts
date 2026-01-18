@@ -103,9 +103,7 @@ export async function DELETE(
 
     if (!appointment) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
-    }
-
-    // Delete associated payment if it exists
+    }    // Delete associated payment if it exists
     if (appointment.payment) {
       await prisma.payment.delete({
         where: { id: appointment.payment.id },

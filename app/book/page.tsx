@@ -38,6 +38,7 @@ export default function BookPage() {
   const [notes, setNotes] = useState('')
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [discount, setDiscount] = useState(0)
@@ -65,8 +66,12 @@ export default function BookPage() {
   }
 
   const fetchAvailableSlots = useCallback(async () => {
-    if (!selectedDate || !selectedService) return
+    if (!selectedDate || !selectedService) {
+      setTimeSlots([])
+      return
+    }
 
+    setIsLoadingSlots(true)
     try {
       const response = await fetch(
         `/api/appointments/availability?date=${selectedDate}&duration=${selectedService.duration}`
@@ -74,9 +79,18 @@ export default function BookPage() {
       const data = await response.json()
       if (response.ok) {
         setTimeSlots(data.slots || [])
+        // Clear selected time if it's no longer available in the new slots
+        setSelectedTime(prevTime => {
+          const newSlots: TimeSlot[] = data.slots || []
+          const stillAvailable = newSlots.some((slot: TimeSlot) => slot.time === prevTime && slot.available)
+          return stillAvailable ? prevTime : ''
+        })
       }
     } catch (error) {
       toast.error('Failed to load available slots')
+      setTimeSlots([])
+    } finally {
+      setIsLoadingSlots(false)
     }
   }, [selectedDate, selectedService])
 
@@ -128,17 +142,6 @@ export default function BookPage() {
     }
   }
 
-  // Generate time slots (9 AM to 6 PM, 30-minute intervals)
-  const generateTimeSlots = () => {
-    const slots: TimeSlot[] = []
-    for (let hour = 9; hour < 18; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-        slots.push({ time, available: true })
-      }
-    }
-    return slots
-  }
 
   const applyPromoCode = async () => {
     if (!promoCode) return
@@ -281,9 +284,18 @@ export default function BookPage() {
                   <label className="block text-sm font-medium mb-2 text-gray-300">
                     Time
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                    {timeSlots.length > 0 ? (
-                      timeSlots.map((slot, index) => (
+                  {isLoadingSlots ? (
+                    <div className="flex items-center justify-center py-8">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-6 h-6 border-2 border-gold-500 border-t-transparent rounded-full"
+                      />
+                      <span className="ml-2 text-gray-400">Loading available slots...</span>
+                    </div>
+                  ) : timeSlots.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                      {timeSlots.map((slot, index) => (
                         <motion.button
                           key={slot.time}
                           onClick={() => setSelectedTime(slot.time)}
@@ -310,35 +322,15 @@ export default function BookPage() {
                             />
                           )}
                         </motion.button>
-                      ))
-                    ) : (
-                      generateTimeSlots().map((slot, index) => (
-                        <motion.button
-                          key={slot.time}
-                          onClick={() => setSelectedTime(slot.time)}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.02 }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`p-2 rounded-lg text-sm border-2 transition-all relative ${
-                            selectedTime === slot.time
-                              ? 'border-gold-500 bg-gold-500/10 text-gold-500 shadow-lg shadow-gold-500/20'
-                              : 'border-gray-800 hover:border-gray-700 text-gray-300 hover:bg-gray-800/50'
-                          }`}
-                        >
-                          {slot.time}
-                          {selectedTime === slot.time && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute -top-1 -right-1 w-3 h-3 bg-gold-500 rounded-full"
-                            />
-                          )}
-                        </motion.button>
-                      ))
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-gray-400">
+                      <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p>No time slots available for this date.</p>
+                      <p className="text-sm text-gray-500 mt-1">This day may be closed or fully booked.</p>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

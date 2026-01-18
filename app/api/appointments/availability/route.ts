@@ -31,6 +31,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ slots: [] })
     }
 
+    // Get working hours for the day of week (0 = Sunday, 1 = Monday, etc.)
+    const dayOfWeek = selectedDate.getDay()
+    const workingHours = await prisma.workingHours.findUnique({
+      where: { dayOfWeek },
+    })
+
+    // If no working hours configured or day is closed, return no slots
+    if (!workingHours || !workingHours.isOpen) {
+      return NextResponse.json({ slots: [] })
+    }
+
+    // Parse start and end times (format: "HH:MM")
+    const [startHour, startMinute] = workingHours.startTime.split(':').map(Number)
+    const [endHour, endMinute] = workingHours.endTime.split(':').map(Number)
+
     // Get existing appointments for the day
     const appointments = await prisma.appointment.findMany({
       where: {
@@ -47,31 +62,45 @@ export async function GET(request: Request) {
       },
     })
 
-    // Generate time slots (9 AM to 6 PM, 30-minute intervals)
+    // Generate time slots within working hours (30-minute intervals)
     const slots: { time: string; available: boolean }[] = []
-    for (let hour = 9; hour < 18; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-        const slotStart = new Date(selectedDate)
-        slotStart.setHours(hour, minute, 0, 0)
-        const slotEnd = new Date(slotStart.getTime() + duration * 60000)
-
-        // Check if slot conflicts with existing appointments
-        const hasConflict = appointments.some((apt) => {
-          const aptStart = new Date(apt.date)
-          const aptEnd = new Date(aptStart.getTime() + apt.service.duration * 60000)
-          return (
-            (slotStart >= aptStart && slotStart < aptEnd) ||
-            (slotEnd > aptStart && slotEnd <= aptEnd) ||
-            (slotStart <= aptStart && slotEnd >= aptEnd)
-          )
-        })
-
-        slots.push({
-          time,
-          available: !hasConflict && slotStart > new Date(),
-        })
+    const workingHoursStartMinutes = startHour * 60 + startMinute
+    const workingHoursEndMinutes = endHour * 60 + endMinute
+    
+    // Start from working hours start time
+    for (let minutes = workingHoursStartMinutes; minutes < workingHoursEndMinutes; minutes += 30) {
+      const hour = Math.floor(minutes / 60)
+      const minute = minutes % 60
+      const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+      
+      const slotStart = new Date(selectedDate)
+      slotStart.setHours(hour, minute, 0, 0)
+      const slotEnd = new Date(slotStart.getTime() + duration * 60000)
+      
+      // Calculate slot end time in minutes for comparison
+      const slotEndMinutes = slotEnd.getHours() * 60 + slotEnd.getMinutes()
+      
+      // Check if slot extends beyond working hours
+      if (slotEndMinutes > workingHoursEndMinutes) {
+        // Skip this slot as it would extend beyond working hours
+        continue
       }
+
+      // Check if slot conflicts with existing appointments
+      const hasConflict = appointments.some((apt) => {
+        const aptStart = new Date(apt.date)
+        const aptEnd = new Date(aptStart.getTime() + apt.service.duration * 60000)
+        return (
+          (slotStart >= aptStart && slotStart < aptEnd) ||
+          (slotEnd > aptStart && slotEnd <= aptEnd) ||
+          (slotStart <= aptStart && slotEnd >= aptEnd)
+        )
+      })
+
+      slots.push({
+        time,
+        available: !hasConflict && slotStart > new Date(),
+      })
     }
 
     return NextResponse.json({ slots })
