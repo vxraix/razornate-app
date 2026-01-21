@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -14,7 +16,12 @@ export async function GET() {
       orderBy: { dayOfWeek: 'asc' },
     })
 
-    return NextResponse.json(hours)
+    const response = NextResponse.json(hours)
+    // Prevent caching to ensure updates are reflected immediately
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    return response
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to fetch working hours' }, { status: 500 })
   }

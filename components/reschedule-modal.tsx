@@ -46,7 +46,13 @@ export function RescheduleModal({
     setIsLoadingSlots(true)
     try {
       const response = await fetch(
-        `/api/appointments/availability?date=${selectedDate}&duration=${appointment.service.duration}`
+        `/api/appointments/availability?date=${selectedDate}&duration=${appointment.service.duration}`,
+        {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }
       )
       const data = await response.json()
       if (response.ok) {
